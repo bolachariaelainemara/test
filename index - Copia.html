@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importar Dados de Planilha</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+        }
+        
+        .upload-section {
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section:hover {
+            border-color: #3498db;
+            background-color: #f0f8ff;
+        }
+        
+        .upload-section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-label {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            margin: 10px 0;
+        }
+        
+        .file-label:hover {
+            background-color: #2980b9;
+        }
+        
+        .file-info {
+            margin-top: 15px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .data-section {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .data-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e1e1e1;
+        }
+        
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e8f4fc;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #27ae60;
+        }
+        
+        .reset-btn {
+            background-color: #e74c3c;
+        }
+        
+        .reset-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .instructions {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .instructions h3 {
+            color: #ff9800;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            th, td {
+                padding: 8px 10px;
+                font-size: 0.9rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Importar Dados de Planilha</h1>
+        
+        <div class="instructions">
+            <h3>Como usar:</h3>
+            <ul>
+                <li>Clique no botão "Escolher Arquivo" para selecionar uma planilha (.xlsx, .xls ou .csv)</li>
+                <li>Os dados da planilha serão exibidos em uma tabela abaixo</li>
+                <li>Use o botão "Exportar para HTML" para baixar uma página HTML com os dados</li>
+                <li>Use o botão "Limpar Dados" para recomeçar</li>
+            </ul>
+        </div>
+        
+        <div class="upload-section">
+            <h2>Carregar Planilha</h2>
+            <input type="file" id="fileInput" class="file-input" accept=".xlsx, .xls, .csv">
+            <label for="fileInput" class="file-label">Escolher Arquivo</label>
+            <div class="file-info" id="fileInfo">Nenhum arquivo selecionado</div>
+        </div>
+        
+        <div class="data-section" id="dataSection">
+            <h2>Dados da Planilha</h2>
+            <div id="tableContainer"></div>
+            <div class="controls">
+                <button id="exportBtn">Exportar para HTML</button>
+                <button id="resetBtn" class="reset-btn">Limpar Dados</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biblioteca para leitura de Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('fileInput');
+            const fileInfo = document.getElementById('fileInfo');
+            const dataSection = document.getElementById('dataSection');
+            const tableContainer = document.getElementById('tableContainer');
+            const exportBtn = document.getElementById('exportBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            let currentData = [];
+            let currentHeaders = [];
+            
+            // Processar arquivo selecionado
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                fileInfo.textContent = `Arquivo selecionado: ${file.name}`;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        
+                        // Obter a primeira planilha
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        
+                        // Converter para JSON
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        
+                        if (jsonData.length === 0) {
+                            alert('A planilha está vazia!');
+                            return;
+                        }
+                        
+                        // Extrair cabeçalhos e dados
+                        currentHeaders = jsonData[0];
+                        currentData = jsonData.slice(1);
+                        
+                        // Exibir dados na tabela
+                        displayData(currentHeaders, currentData);
+                        
+                        // Mostrar seção de dados
+                        dataSection.style.display = 'block';
+                        
+                    } catch (error) {
+                        console.error('Erro ao processar arquivo:', error);
+                        alert('Erro ao processar o arquivo. Verifique se é uma planilha válida.');
+                    }
+                };
+                
+                reader.readAsArrayBuffer(file);
+            });
+            
+            // Exibir dados na tabela
+            function displayData(headers, data) {
+                let tableHTML = '<table><thead><tr>';
+                
+                // Cabeçalhos
+                headers.forEach(header => {
+                    tableHTML += `<th>${header}</th>`;
+                });
+                tableHTML += '</tr></thead><tbody>';
+                
+                // Dados
+                data.forEach(row => {
+                    tableHTML += '<tr>';
+                    headers.forEach((_, index) => {
+                        tableHTML += `<td>${row[index] || ''}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                });
+                
+                tableHTML += '</tbody></table>';
+                tableContainer.innerHTML = tableHTML;
+            }
+            
+            // Exportar para HTML
+            exportBtn.addEventListener('click', function() {
+                if (currentData.length === 0) {
+                    alert('Não há dados para exportar!');
+                    return;
+                }
+                
+                let htmlContent = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dados da Planilha</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        tr:hover {
+            background-color: #e8f4fc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dados da Planilha</h1>
+    <table>
+        <thead>
+            <tr>
+`;
+                
+                // Adicionar cabeçalhos
+                currentHeaders.forEach(header => {
+                    htmlContent += `               <th>${header}</th>\n`;
+                });
+                
+                htmlContent += `           </tr>
+        </thead>
+        <tbody>
+`;
+                
+                // Adicionar dados
+                currentData.forEach(row => {
+                    htmlContent += '           <tr>\n';
+                    currentHeaders.forEach((_, index) => {
+                        htmlContent += `               <td>${row[index] || ''}</td>\n`;
+                    });
+                    htmlContent += '           </tr>\n';
+                });
+                
+                htmlContent += `       </tbody>
+    </table>
+</body>
+</html>`;
+                
+                // Criar e baixar arquivo
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'dados_planilha.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                alert('Arquivo HTML baixado com sucesso!');
+            });
+            
+            // Limpar dados
+            resetBtn.addEventListener('click', function() {
+                fileInput.value = '';
+                fileInfo.textContent = 'Nenhum arquivo selecionado';
+                dataSection.style.display = 'none';
+                tableContainer.innerHTML = '';
+                currentData = [];
+                currentHeaders = [];
+            });
+        });
+    </script>
+</body>
+</html>
